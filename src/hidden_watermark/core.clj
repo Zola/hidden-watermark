@@ -109,6 +109,5 @@
 
 (println (mat/row-count test-matrix))
 (println (mat/column-count test-matrix))
-
-;; (def test-fft-matrix ((dft-reals test-matrix) 4 4))
+()
 (img/show (matrix-to-image test-matrix (fn [x] x)))
