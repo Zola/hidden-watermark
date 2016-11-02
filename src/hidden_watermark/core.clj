@@ -6,7 +6,9 @@
             [mikera.image.core :as img]
             [clojure.core.matrix :as mat]))
 
-(def path "test.jpeg")
+(mat/set-current-implementation :vectorz)
+
+(def path "test.png")
 
 (defn buffer-image [path]
   (let[file (io/file path)]
@@ -19,7 +21,6 @@
 (defn real ^double [^double r ^double i] r)
 
 (defn imaginary ^double [^double r ^double i] i)
-
 
 (defn dft-fn [ri-fn M]
     (let [w (mat/column-count M)
@@ -65,23 +66,19 @@
 
 (def idft-ri-reals (partial idft-ri-fn real))
 
-(defn rgb-to-ngrey [val]
-  (/ (+ (* 0.2126 (bit-and 0xFF (bit-shift-right val 16)))
-        (* 0.7152 (bit-and 0xFF (bit-shift-right val 8)))
-        (* 0.0722 (bit-and 0xFF val)))
-     255.0))
+;; grey filter
+;; (defn rgb-to-ngrey [val]
+;;   (/ (+ (* 0.2126 (bit-and 0xFF (bit-shift-right val 16)))
+;;         (* 0.7152 (bit-and 0xFF (bit-shift-right val 8)))
+;;         (* 0.0722 (bit-and 0xFF val)))
+;;      255.0))
 
-(defn rgb-to-grey [val]
-  (+ (* 0.2126 (bit-and 0xFF (bit-shift-right val 16)))
-     (* 0.7152 (bit-and 0xFF (bit-shift-right val 8)))
-     (* 0.0722 (bit-and 0xFF val))))
-
-(defn ngrey-to-rgb [^double val]
-  (let [ival (int (Math/round (* val 255)))]
-    (bit-or 0xFF000000
-            (bit-shift-left ival 16)
-            (bit-shift-left ival 8)
-            ival)))
+;; (defn ngrey-to-rgb [^double val]
+;;   (let [ival (int (Math/round (* val 255)))]
+;;     (bit-or 0xFF000000
+;;             (bit-shift-left ival 16)
+;;             (bit-shift-left ival 8)
+;;             ival)))
 
 (defn image-to-matrix [^BufferedImage bi rgb-to-val-fn]
   (let [h (.getHeight bi)
@@ -91,7 +88,6 @@
       (dotimes [x w]
         (mat/mset! M y x (rgb-to-val-fn (.getRGB bi x y)))))
     M))
-
 
 (defn matrix-to-image [M val-to-rgb-fn]
   (let [w (mat/column-count M)
@@ -109,12 +105,10 @@
         r (double (- mx mn))]
     (mat/emap! (fn [^double d] (/ (- d mn) r)) M)))
 
-(def eg-1 [0.0  0.0    0.0    0.0    0.0  0.0  0.0  0.0
-           0.0  0.0   70.0   80.0   90.0  0.0  0.0  0.0
-           0.0  0.0   90.0  100.0  110.0  0.0  0.0  0.0
-           0.0  0.0  110.0  120.0  130.0  0.0  0.0  0.0
-           0.0  0.0  130.0  140.0  150.0  0.0  0.0  0.0
-           0.0  0.0    0.0    0.0    0.0  0.0  0.0  0.0
-           0.0  0.0    0.0    0.0    0.0  0.0  0.0  0.0
-           0.0  0.0    0.0    0.0    0.0  0.0  0.0  0.0])
+(def test-matrix (image-to-matrix (buffer-image path) (fn [x] x)))
 
+(println (mat/row-count test-matrix))
+(println (mat/column-count test-matrix))
+
+;; (def test-fft-matrix ((dft-reals test-matrix) 4 4))
+(img/show (matrix-to-image test-matrix (fn [x] x)))
