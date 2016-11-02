@@ -68,20 +68,6 @@
 
 (def idft-ri-reals (partial idft-ri-fn real))
 
-;; grey filter
-;; (defn rgb-to-ngrey [val]
-;;   (/ (+ (* 0.2126 (bit-and 0xFF (bit-shift-right val 16)))
-;;         (* 0.7152 (bit-and 0xFF (bit-shift-right val 8)))
-;;         (* 0.0722 (bit-and 0xFF val)))
-;;      255.0))
-
-;; (defn ngrey-to-rgb [^double val]
-;;   (let [ival (int (Math/round (* val 255)))]
-;;     (bit-or 0xFF000000
-;;             (bit-shift-left ival 16)
-;;             (bit-shift-left ival 8)
-;;             ival)))
-
 (defn image-to-matrix [^BufferedImage bi rgb-to-val-fn]
   (let [h (.getHeight bi)
         w (.getWidth bi)
@@ -107,13 +93,12 @@
         r (double (- mx mn))]
     (mat/emap! (fn [^double d] (/ (- d mn) r)) M)))
 
-(def test-matrix (image-to-matrix (buffer-image path) (fn [x] x)))
+(def test-matrix (image-to-matrix (buffer-image path) #(-> %)))
 
 (println (mat/row-count test-matrix))
 (println (mat/column-count test-matrix))
 
 (def fft-matrix-r (dft-reals test-matrix))
-
 (def fft-matrix-i (dft-imaginarys test-matrix))
 (def ifft-matrix (idft-ri-reals fft-matrix-r fft-matrix-i))
 
