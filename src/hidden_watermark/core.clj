@@ -95,9 +95,6 @@
 
 (def test-matrix (image-to-matrix (buffer-image path) #(-> %)))
 
-(println (mat/row-count test-matrix))
-(println (mat/column-count test-matrix))
-
 (def fft-matrix-r (dft-reals test-matrix))
 (def fft-matrix-i (dft-imaginarys test-matrix))
 (def ifft-matrix (idft-ri-reals fft-matrix-r fft-matrix-i))
