@@ -4,19 +4,20 @@
            [edu.emory.mathcs.jtransforms.fft DoubleFFT_2D RealFFTUtils_2D])
   (:require [clojure.java.io :as io]
             [mikera.image.core :as img]
-            [clojure.core.matrix :as mat]))
+            [clojure.core.matrix :as mat])
+  (:use  [clojure.core.matrix]))
 
 (mat/set-current-implementation :vectorz)
 
 (def path "test.png")
-
+(def wm-path "wm.png")
 (defn buffer-image [path]
   (let[file (io/file path)]
     (img/load-image file)))
 
-(defn magnitude ^double [^double r ^double i] (Math/sqrt (+ (* r r) (* i i))))
+;; (defn magnitude ^double [^double r ^double i] (Math/sqrt (+ (* r r) (* i i))))
 
-(defn phase ^double [^double r ^double i] (Math/atan2 i r))
+;; (defn phase ^double [^double r ^double i] (Math/atan2 i r))
 
 (defn real ^double [^double r ^double i] r)
 
@@ -93,19 +94,23 @@
         r (double (- mx mn))]
     (mat/emap! (fn [^double d] (/ (- d mn) r)) M)))
 
-(def test-matrix (image-to-matrix (buffer-image path) #(-> %)))
+;; example useage
+;; (def test-matrix (image-to-matrix (buffer-image path) #(-> %)))
 
-(def fft-matrix-m (dft-magnitudes test-matrix))
-(def fft-matrix-p (dft-phases test-matrix))
+;; (def fft-matrix-m (dft-magnitudes test-matrix))
+;; (def fft-matrix-p (dft-phases test-matrix))
+;; (def fft-matrix-r (dft-reals test-matrix))
+;; (def fft-matrix-i (dft-imaginarys test-matrix))
 
-(def fft-matrix-r (dft-reals test-matrix))
-(def fft-matrix-i (dft-imaginarys test-matrix))
-(def ifft-matrix (idft-ri-reals fft-matrix-r fft-matrix-i))
+;; (def ifft-matrix (idft-ri-reals fft-matrix-r fft-matrix-i))
 
+;; (img/show (matrix-to-image fft-matrix-r (fn [x] x)) :title "real fft image")
+;; (img/show (matrix-to-image fft-matrix-i (fn [x] x)) :title "imaginary fft image")
+;; (img/show (matrix-to-image fft-matrix-m (fn [x] x)) :title "magnitude fft image")
+;; (img/show (matrix-to-image fft-matrix-p (fn [x] x)) :title "phase fft image")
+;; (img/show (matrix-to-image ifft-matrix (fn [x] x)) :title "inverse fft image")
 
-(img/show (matrix-to-image fft-matrix-r (fn [x] x)) :title "real fft image")
-(img/show (matrix-to-image fft-matrix-i (fn [x] x)) :title "imaginary fft image")
-
-(img/show (matrix-to-image fft-matrix-m (fn [x] x)) :title "magnitude fft image")
-(img/show (matrix-to-image fft-matrix-p (fn [x] x)) :title "phase fft image")
-(img/show (matrix-to-image ifft-matrix (fn [x] x)) :title "inverse fft image")
+(defn update-submatrix [origin submatrix [x y]]
+  (mat/assign! (mat/submatrix origin x (mat/row-count submatrix) y (mat/column-count submatrix))
+               submatrix)
+  origin)
