@@ -15,10 +15,6 @@
   (let[file (io/file path)]
     (img/load-image file)))
 
-;; (defn magnitude ^double [^double r ^double i] (Math/sqrt (+ (* r r) (* i i))))
-
-;; (defn phase ^double [^double r ^double i] (Math/atan2 i r))
-
 (defn real ^double [^double r ^double i] r)
 
 (defn imaginary ^double [^double r ^double i] i)
@@ -88,21 +84,15 @@
           (.setRGB bi x y (unchecked-int (val-to-rgb-fn v))))))
     bi))
 
-(defn normalize! [M]
-  (let [^double mn (mat/emin M)
-        ^double mx (mat/emax M)
-        r (double (- mx mn))]
-    (mat/emap! (fn [^double d] (/ (- d mn) r)) M)))
-
-;; example useage
-;; (def test-matrix (image-to-matrix (buffer-image path) #(-> %)))
+;; encode here
+(def test-matrix (image-to-matrix (buffer-image path) #(-> %)))
 
 ;; (def fft-matrix-m (dft-magnitudes test-matrix))
 ;; (def fft-matrix-p (dft-phases test-matrix))
-;; (def fft-matrix-r (dft-reals test-matrix))
-;; (def fft-matrix-i (dft-imaginarys test-matrix))
+(def fft-matrix-r (dft-reals test-matrix))
+(def fft-matrix-i (dft-imaginarys test-matrix))
 
-;; (def ifft-matrix (idft-ri-reals fft-matrix-r fft-matrix-i))
+(def ifft-matrix (idft-ri-reals fft-matrix-r fft-matrix-i))
 
 ;; (img/show (matrix-to-image fft-matrix-r (fn [x] x)) :title "real fft image")
 ;; (img/show (matrix-to-image fft-matrix-i (fn [x] x)) :title "imaginary fft image")
@@ -111,6 +101,36 @@
 ;; (img/show (matrix-to-image ifft-matrix (fn [x] x)) :title "inverse fft image")
 
 (defn update-submatrix [origin submatrix [x y]]
-  (mat/assign! (mat/submatrix origin x (mat/row-count submatrix) y (mat/column-count submatrix))
-               submatrix)
-  origin)
+  (let [origin-dup (mat/clone origin)]
+    (mat/assign! (mat/submatrix origin-dup x (mat/row-count submatrix) y (mat/column-count submatrix)) submatrix)
+    origin-dup))
+
+(defn display-from-matrix [m title]
+  (let [image (matrix-to-image m #(-> %))]
+     (img/show image :title title)))
+
+(display-from-matrix fft-matrix-r "real fft")
+(display-from-matrix fft-matrix-i "imaginary fft")
+(display-from-matrix ifft-matrix "ifft origin image")
+
+(def M (matrix [[1 2] [3 4]]))
+
+
+(def scaled-wm (img/resize (buffer-image wm-path) 256 256))
+(def wm-matrix (image-to-matrix scaled-wm #(-> (/ % 1000000))))
+
+(display-from-matrix wm-matrix "watermark")
+
+;;
+(def watermarked (add fft-matrix-r wm-matrix))
+
+(def new-ifft-matrix (idft-ri-reals watermarked fft-matrix-i))
+(display-from-matrix new-ifft-matrix "watermarked")
+
+
+;; decode here
+
+(def fft-matrix-r-new (dft-reals new-ifft-matrix))
+(use '[clojure.core.matrix.operators])
+(def decoded-wm (- fft-matrix-r-new fft-matrix-r))
+ (img/show (matrix-to-image decoded-wm (fn [x] (* x 1))) :title "decoded")
