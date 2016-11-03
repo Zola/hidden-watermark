@@ -95,6 +95,9 @@
 
 (def test-matrix (image-to-matrix (buffer-image path) #(-> %)))
 
+(def fft-matrix-m (dft-magnitudes test-matrix))
+(def fft-matrix-p (dft-phases test-matrix))
+
 (def fft-matrix-r (dft-reals test-matrix))
 (def fft-matrix-i (dft-imaginarys test-matrix))
 (def ifft-matrix (idft-ri-reals fft-matrix-r fft-matrix-i))
@@ -102,4 +105,7 @@
 
 (img/show (matrix-to-image fft-matrix-r (fn [x] x)) :title "real fft image")
 (img/show (matrix-to-image fft-matrix-i (fn [x] x)) :title "imaginary fft image")
+
+(img/show (matrix-to-image fft-matrix-m (fn [x] x)) :title "magnitude fft image")
+(img/show (matrix-to-image fft-matrix-p (fn [x] x)) :title "phase fft image")
 (img/show (matrix-to-image ifft-matrix (fn [x] x)) :title "inverse fft image")
