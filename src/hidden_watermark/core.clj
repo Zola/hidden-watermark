@@ -5,18 +5,19 @@
   (:require [clojure.java.io :as io]
             [mikera.image.core :as img]
             [clojure.core.matrix :as mat])
-  (:use  [clojure.core.matrix]))
+  (:use  [clojure.core.matrix]
+         [clojure.core.matrix.operators]))
 
 (mat/set-current-implementation :vectorz)
 
 (def path "test.png")
 (def wm-path "wm.png")
+
 (defn buffer-image [path]
   (let[file (io/file path)]
     (img/load-image file)))
 
 (defn real ^double [^double r ^double i] r)
-
 (defn imaginary ^double [^double r ^double i] i)
 
 (defn dft-fn [ri-fn M]
@@ -36,8 +37,6 @@
             (mat/mset! nM y x (ri-fn r i)))))
       nM))
 
-(def dft-magnitudes (partial dft-fn magnitude))
-(def dft-phases (partial dft-fn phase))
 (def dft-reals (partial dft-fn real))
 (def dft-imaginarys (partial dft-fn imaginary))
 
@@ -113,9 +112,6 @@
 (display-from-matrix fft-matrix-i "imaginary fft")
 (display-from-matrix ifft-matrix "ifft origin image")
 
-(def M (matrix [[1 2] [3 4]]))
-
-
 (def scaled-wm (img/resize (buffer-image wm-path) 256 256))
 (def wm-matrix (image-to-matrix scaled-wm #(-> (/ % 1000000))))
 
@@ -131,6 +127,6 @@
 ;; decode here
 
 (def fft-matrix-r-new (dft-reals new-ifft-matrix))
-(use '[clojure.core.matrix.operators])
+
 (def decoded-wm (- fft-matrix-r-new fft-matrix-r))
  (img/show (matrix-to-image decoded-wm (fn [x] (* x 1))) :title "decoded")
