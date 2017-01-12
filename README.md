@@ -1,10 +1,12 @@
 # hidden-watermark
 
-A Clojure library designed to ... well, that part is up to you.
+This is a demo usage to combine two images, one is the main image, the other is the watermark. Using Fast Fourier Transform Algorithm. also there is a function to extract the two images.
 
 ## Usage
 
-FIXME
+```bash
+lein deps
+```
 
 ## License
 
